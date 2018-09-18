@@ -1,2 +1,0 @@
-/Users/vimalnarayanan/Desktop/Xolair/Xolair_IOS/obj/Debug/Assembly-CSharp.csprojResolveAssemblyReference.cache
-/Users/vimalnarayanan/Desktop/Xolair/Xolair_IOS/obj/Debug/Assembly-CSharp.csproj.CoreCompileInputs.cache

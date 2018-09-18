@@ -16,13 +16,10 @@ public class InputValue : MonoBehaviour {
     public Text CSUName;
     public Text CSUAge;
     public Text CSUGender;
-
-
-
+    
     public void SetText()
-
     {
-
+        
         Name.text = Myname.text;
         Age.text = age.text;
         Gender.text = gender.text;
