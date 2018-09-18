@@ -105,6 +105,11 @@ namespace MaterialUI
 
 		private ScreenConfig hideScreen;
 
+		public Action OnShowStarted;
+		public Action OnShowCompleted;
+		public Action OnHideStarted;
+		public Action OnHideCompleted;
+
 		void Awake()
 		{
 			theRectTransform = screenSpace.GetComponent<RectTransform>();
@@ -167,6 +172,8 @@ namespace MaterialUI
 
 			animStartTime = Time.realtimeSinceStartup;
 			state = 1;
+			
+			OnShowStarted?.Invoke();
 		}
 
 		public void HideWithoutTransition()
@@ -214,6 +221,8 @@ namespace MaterialUI
 
 			animStartTime = Time.realtimeSinceStartup;
 			state = 2;
+			
+			OnHideStarted?.Invoke();
 		}
 
 		void Update()
@@ -293,6 +302,8 @@ namespace MaterialUI
 					}
 
 					state = 0;
+					
+					OnShowCompleted?.Invoke();
 				}
 			}
 			else if (state == 2)
@@ -339,6 +350,8 @@ namespace MaterialUI
 					theRectTransform.position = screenSpacePosition;
 					screenSpace.SetActive(false);
 					state = 0;
+					
+					OnHideCompleted?.Invoke();
 				}
 			}
 		}
