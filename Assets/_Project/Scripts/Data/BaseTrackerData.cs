@@ -18,5 +18,10 @@ namespace App.Data
             }
             return _fixedDate;
         }
+
+        public virtual JSONObject FormatToJson()
+        {
+            return null;
+        }
     }
 }

@@ -10,6 +10,9 @@ using App.Data.CSU;
 public class LogManager : MonoSingleton<LogManager>
 {
     private static Dictionary<DateTime, LogData> _calendarDictionary = new Dictionary<DateTime, LogData>();
+    
+    // we also need to keep sorted list to use  
+    private static List<LogData> _logDataList = new List<LogData>();
 
     // SSA
     private const string SYMPTOM_LOG = "symptom_tracker.log";
