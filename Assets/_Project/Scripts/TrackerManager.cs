@@ -60,7 +60,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
 
             // don't manage outdated logs
             if ((today - data.GetDate()).TotalDays > LOG_LIFE_TIME) continue;
-            
+
             _symptomJsonObjectList.Add(jsonObj);
 
             // check if this date already exists
@@ -89,7 +89,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             if ((today - data.GetDate()).TotalDays > LOG_LIFE_TIME) continue;
 
             _asthmaJsonObjectList.Add(jsonObj);
-            
+
             // check if this date already exists
             if (_trackerDictionary.ContainsKey(data.GetDate()))
             {
@@ -114,7 +114,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
 
             // don't manage outdated logs
             if ((today - data.GetDate()).TotalDays > LOG_LIFE_TIME) continue;
-            
+
             _csuJsonObjectList.Add(jsonObj);
 
             // check if this date already exists
@@ -141,7 +141,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
 
             // don't manage outdated logs
             if ((today - data.GetDate()).TotalDays > LOG_LIFE_TIME) continue;
-            
+
             _uasJsonObjectList.Add(jsonObj);
 
             // check if this date already exists
@@ -175,6 +175,72 @@ public class TrackerManager : MonoSingleton<TrackerManager>
 
     /// <summary>
     /// Request particular day entry.
+    /// </summary>
+    /// <param name="date">Date must be formatted to Date only</param>
+    /// <returns>Return new data if doesn't exists and previously created otherwise</returns>
+    public static QuestionBasedTrackerData GetData(DateTime date, TrackerType type)
+    {
+        LogData logData = GetLogData(date);
+        // if there is not log data yet
+        if (logData == null)
+        {
+            return GenerateNewData(date, type);
+        }
+        else
+        {
+            switch (type)
+            {
+                case TrackerType.Asthma:
+                    if (logData.asthmaData != null)
+                    {
+                        return logData.asthmaData;
+                    }
+
+                    break;
+                case TrackerType.Symptom:
+                    if (logData.symptomData != null)
+                    {
+                        return logData.symptomData;
+                    }
+
+                    break;
+                case TrackerType.CSU:
+                    if (logData.csuData != null)
+                    {
+                        return logData.csuData;
+                    }
+
+                    break;
+                case TrackerType.UAS:
+                    if (logData.uasData != null)
+                    {
+                        return logData.uasData;
+                    }
+
+                    break;
+            }
+
+            return GenerateNewData(date, type);
+        }
+    }
+
+    private static QuestionBasedTrackerData GenerateNewData(DateTime date, TrackerType type)
+    {
+        switch (type)
+        {
+            case TrackerType.Asthma:
+                return new AsthmaData(date);
+            case TrackerType.Symptom:
+                return new SymptomData(date);
+            case TrackerType.CSU:
+                return new CSUData(date);
+            case TrackerType.UAS:
+                return new UASData(date);
+        }
+    }
+
+    /// <summary>
+    /// Request particular day entry score.
     /// </summary>
     /// <param name="date">Date must be formatted to Date only</param>
     /// <returns>Return null if doesn't exists</returns>
@@ -220,7 +286,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
     public static void UpdateEntry(DateTime day, CSUData data)
     {
         _csuJsonObjectList.Add(data.FormatToJson());
-        
+
         if (_trackerDictionary.ContainsKey(day))
         {
             // Debug.LogWarning($"Same date {day.ToLongDateString()} log data already exist. Updating it.");
@@ -230,20 +296,21 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         {
             _trackerDictionary.Add(day, new LogData {csuData = data});
         }
-        
+
         // update log file
         JSONObject o = new JSONObject();
         for (int i = 0; i < _csuJsonObjectList.Count; i++)
         {
             o.Add(_csuJsonObjectList[i]);
         }
+
         WriteToFile(GetPath(TrackerType.CSU), o.Print(true));
     }
 
     public static void UpdateEntry(DateTime day, UASData data)
     {
         _uasJsonObjectList.Add(data.FormatToJson());
-        
+
         if (_trackerDictionary.ContainsKey(day))
         {
             // Debug.LogWarning($"Same date {day.ToLongDateString()} log data already exist. Updating it.");
@@ -253,20 +320,21 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         {
             _trackerDictionary.Add(day, new LogData {uasData = data});
         }
-        
+
         // update log file
         JSONObject o = new JSONObject();
         for (int i = 0; i < _uasJsonObjectList.Count; i++)
         {
             o.Add(_uasJsonObjectList[i]);
         }
+
         WriteToFile(GetPath(TrackerType.UAS), o.Print(true));
     }
 
     public static void UpdateEntry(DateTime day, AsthmaData data)
     {
         _asthmaJsonObjectList.Add(data.FormatToJson());
-        
+
         if (_trackerDictionary.ContainsKey(day))
         {
             // Debug.LogWarning($"Same date {day.ToLongDateString()} log data already exist. Updating it.");
@@ -276,20 +344,21 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         {
             _trackerDictionary.Add(day, new LogData {asthmaData = data});
         }
-        
+
         // update log file
         JSONObject o = new JSONObject();
         for (int i = 0; i < _asthmaJsonObjectList.Count; i++)
         {
             o.Add(_asthmaJsonObjectList[i]);
         }
+
         WriteToFile(GetPath(TrackerType.Asthma), o.Print(true));
     }
 
     public static void UpdateEntry(DateTime day, SymptomData data)
     {
         _symptomJsonObjectList.Add(data.FormatToJson());
-        
+
         if (_trackerDictionary.ContainsKey(day))
         {
             // Debug.LogWarning($"Same date {day.ToLongDateString()} log data already exist. Updating it.");
@@ -299,13 +368,14 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         {
             _trackerDictionary.Add(day, new LogData {symptomData = data});
         }
-        
+
         // update log file
         JSONObject o = new JSONObject();
         for (int i = 0; i < _symptomJsonObjectList.Count; i++)
         {
             o.Add(_symptomJsonObjectList[i]);
         }
+
         WriteToFile(GetPath(TrackerType.Symptom), o.Print(true));
     }
 
@@ -467,7 +537,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
 
         return Path.Combine(Helper.GetDataPath(), LOGS_FOLDER, fileName);
     }
-    
+
     /// <summary>
     /// Test method to generate random data for particular day.
     /// </summary>
@@ -479,7 +549,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         Texture2D[] textures = Resources.LoadAll<Texture2D>("RandomTextures");
         date = date.Date;
         LogData logData = new LogData();
-        
+
         // symptom tracker
         SymptomData symptomData = new SymptomData(date);
         for (int j = 0; j < symptomData.questionDataList.Count; j++)
@@ -487,6 +557,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             QuestionBasedTrackerData.QuestionData qData = symptomData.GetQuestion();
             symptomData.SetAnswer(qData, UnityEngine.Random.Range(1, qData.answersOption.Length));
         }
+
         logData.symptomData = symptomData;
 
         // asthma test
@@ -496,6 +567,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             QuestionBasedTrackerData.QuestionData qData = asthmaData.GetQuestion();
             asthmaData.SetAnswer(qData, UnityEngine.Random.Range(1, qData.answersOption.Length));
         }
+
         logData.asthmaData = asthmaData;
 
         // CSU test
@@ -533,6 +605,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
                 csuData.SavePhotos(shuffled);
             }
         }
+
         logData.csuData = csuData;
 
         // UAS test
@@ -542,8 +615,9 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             QuestionBasedTrackerData.QuestionData qData = uasData.GetQuestion();
             uasData.SetAnswer(qData, UnityEngine.Random.Range(1, qData.answersOption.Length));
         }
+
         logData.uasData = uasData;
-        
+
         return logData;
     }
 }
