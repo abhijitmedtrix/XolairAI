@@ -20,25 +20,33 @@ namespace App.Data
         public void UpdateData(SymptomData data)
         {
             symptomData = data;
-            OnUpdate.Invoke();
+            OnUpdate?.Invoke();
         }
 
         public void UpdateData(AsthmaData data)
         {
             asthmaData = data;
-            OnUpdate.Invoke();
+            OnUpdate?.Invoke();
         }
 
         public void UpdateData(CSUData data)
         {
             csuData = data;
-            OnUpdate.Invoke();
+            OnUpdate?.Invoke();
         }
 
         public void UpdateData(UASData data)
         {
             uasData = data;
-            OnUpdate.Invoke();
+            OnUpdate?.Invoke();
+        }
+
+        public void DeleteLocalContent()
+        {
+            if (csuData != null)
+            {
+                csuData.DeletePhotos();
+            }
         }
     }
 }

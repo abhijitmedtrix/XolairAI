@@ -17060,10 +17060,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2033419878}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4432e17fbb24a4cfa92d3cca7f67b9de, type: 3}
+  m_Script: {fileID: 11500000, guid: ea56c6b78d1af465dbaeba2a4f5efb07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clearLogOnStart: 0
 --- !u!1 &2042825584
 GameObject:
   m_ObjectHideFlags: 0
