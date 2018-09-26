@@ -237,6 +237,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             case TrackerType.UAS:
                 return new UASData(date);
         }
+        return null;
     }
 
     /// <summary>
