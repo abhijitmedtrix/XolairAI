@@ -153,6 +153,17 @@ namespace App.Data
             return _totalScore;
         }
 
+        public virtual int GetMaxScore()
+        {
+            int max = 0;
+            for (int i = 0; i < questionDataList.Count; i++)
+            {
+                max += questionDataList[i].GetMaxScore();
+            }
+
+            return max;
+        }
+        
         public List<QuestionData> questionDataList;
 
         public class QuestionData
@@ -163,6 +174,11 @@ namespace App.Data
 
             // this option is actual only for SymptomData, in other cases keep it always <false>
             public bool canBeSkipped;
+            
+            public int GetMaxScore()
+            {
+                return answersOption[answersOption.Length - 1].points;
+            }
         }
 
         public struct AnswerOption

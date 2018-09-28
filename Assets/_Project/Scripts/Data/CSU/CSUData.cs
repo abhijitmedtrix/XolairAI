@@ -9,11 +9,13 @@ namespace App.Data.CSU
 {
     /*
      * JSON structure
-     * {
+     * "answers" : [
+     *     {
      *     "head" : [1, 1],
      *     "chest" : [0, 0],
      *     "legs" : [1, 0]
-     * }
+     *     }
+     * ]
      *
      * Photos location
      *
@@ -41,30 +43,39 @@ namespace App.Data.CSU
 
         public CSUData(string json) : base(json)
         {
+            // set default data values
+            _answersDict = new Dictionary<BodyPart, Answer[]>
+            {
+                {BodyPart.Head, new Answer[] {new Answer {option = 0}, new Answer {option = 0}}},
+                {BodyPart.Chest, new Answer[] {new Answer {option = 0}, new Answer {option = 0}}},
+                {BodyPart.Legs, new Answer[] {new Answer {option = 0}, new Answer {option = 0}}}
+            };
+            
             questionDataList = questions;
             
             // clear incorrectly filled array from base QuestionBaseTrackerData constructor
             _answers.Clear();
 
-            _answersDict = new Dictionary<BodyPart, Answer[]>();
-
             // parse json
             JSONObject answersObject = _jsonObject.GetField("answers");
 
+            var values = Enum.GetValues(typeof(BodyPart));
+            
             // fill up dictionary
-            foreach (KeyValuePair<BodyPart, Answer[]> entry in _answersDict)
+            foreach (BodyPart key in values)
             {
-                string key = entry.Key.ToString().ToLower();
-                if (answersObject.HasField(key))
+                string keyString = key.ToString().ToLower();
+                if (answersObject.HasField(keyString))
                 {
                     Answer[] answers = new Answer[2];
-                    JSONObject obj = answersObject.GetField(key);
+                    JSONObject obj = answersObject.GetField(keyString);
                     for (int i = 0; i < obj.list.Count; i++)
                     {
                         answers[i] = new Answer{option = (int) obj.list[i].GetField("option").n};
                     }
 
-                    _answersDict.Add(entry.Key, answers);
+                    _answersDict[key] = answers;
+                    
                 }
                 else
                 {
@@ -72,18 +83,13 @@ namespace App.Data.CSU
                 }
             }
 
-            _answersDict = new Dictionary<BodyPart, Answer[]>
-            {
-                {BodyPart.Head, new Answer[] {new Answer {option = 0}, new Answer {option = 0}}},
-                {BodyPart.Chest, new Answer[] {new Answer {option = 0}, new Answer {option = 0}}},
-                {BodyPart.Legs, new Answer[] {new Answer {option = 0}, new Answer {option = 0}}}
-            };
         }
 
         public CSUData(DateTime date) : base(date)
         {
             questionDataList = questions;
 
+            // set default data values
             _answersDict = new Dictionary<BodyPart, Answer[]>
             {
                 {BodyPart.Head, new Answer[] {new Answer {option = 0}, new Answer {option = 0}}},
@@ -148,13 +154,30 @@ namespace App.Data.CSU
                 Answer[] answers = entry.Value;
                 for (int i = 0; i < answers.Length; i++)
                 {
-                    _totalScore += questionDataList[i].answersOption[_answers[i].option].points;
+                    _totalScore += questionDataList[i].answersOption[answers[i].option].points;
                 }
             }
 
             return _totalScore;
         }
 
+        public override int GetMaxScore()
+        {
+            int max = 0;
+            
+            var values = Enum.GetValues(typeof(BodyPart));
+            
+            for (int i = 0; i < questionDataList.Count; i++)
+            {
+                max += questionDataList[i].GetMaxScore();
+            }
+
+            // there are 3 body parts for CSU data, so multiply this value x3
+            max *= values.Length;
+
+            return max;
+        }
+        
         public void ChangeBodyPart(int index)
         {
             ChangeBodyPart((BodyPart) index);
@@ -205,6 +228,43 @@ namespace App.Data.CSU
             {
                 textures[i] = new Texture2D(2, 2);
                 textures[i].LoadImage(File.ReadAllBytes(files[i].FullName));
+            }
+
+            return textures;
+        }
+        
+        public int GetPhotosCount()
+        {
+            string folderPath = Path.Combine(Helper.GetDataPath(), TrackerManager.LOGS_FOLDER, CSU_FOLDER, this.GetDate().ToString("dd-MM-yyyy"));
+
+            DirectoryInfo directory = new DirectoryInfo(folderPath);
+            if (!directory.Exists)
+            {
+                Debug.LogWarning("No such directory found: " + directory.FullName);
+                return 0;
+            }
+
+            return Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories).Length;
+        }
+        
+        public Texture2D[] GetAllPhotos()
+        {
+            string folderPath = Path.Combine(Helper.GetDataPath(), TrackerManager.LOGS_FOLDER, CSU_FOLDER, this.GetDate().ToString("dd-MM-yyyy"));
+
+            DirectoryInfo directory = new DirectoryInfo(folderPath);
+            if (!directory.Exists)
+            {
+                Debug.LogWarning("No such directory found: " + directory.FullName);
+                return null;
+            }
+            string[] files = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories);
+
+            // load all existing textures
+            Texture2D[] textures = new Texture2D[files.Length];
+            for (int i = 0; i < files.Length; i++)
+            {
+                textures[i] = new Texture2D(2, 2);
+                textures[i].LoadImage(File.ReadAllBytes(files[i]));
             }
 
             return textures;
