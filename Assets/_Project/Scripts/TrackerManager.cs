@@ -27,10 +27,10 @@ public class TrackerManager : MonoSingleton<TrackerManager>
 
     // we also need to keep sorted list to use  
     private static List<LogData> _logDataList = new List<LogData>();
-    private static List<JSONObject> _csuJsonObjectList = new List<JSONObject>();
-    private static List<JSONObject> _uasJsonObjectList = new List<JSONObject>();
-    private static List<JSONObject> _asthmaJsonObjectList = new List<JSONObject>();
-    private static List<JSONObject> _symptomJsonObjectList = new List<JSONObject>();
+    private static List<QuestionBasedTrackerData> _csuJsonObjectList = new List<QuestionBasedTrackerData>();
+    private static List<QuestionBasedTrackerData> _uasJsonObjectList = new List<QuestionBasedTrackerData>();
+    private static List<QuestionBasedTrackerData> _asthmaJsonObjectList = new List<QuestionBasedTrackerData>();
+    private static List<QuestionBasedTrackerData> _symptomJsonObjectList = new List<QuestionBasedTrackerData>();
 
     private const int LOG_LIFE_TIME = 60;
     public const string LOGS_FOLDER = "logs";
@@ -43,7 +43,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
     private const string CSU_LOG = "CSU_tracker.json";
     private const string UAS_LOG = "urticaria_activity_score.json";
 
-    private void Start()
+    private void Awake()
     {
         DateTime today = DateTime.Now.Date;
 
@@ -61,7 +61,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             // don't manage outdated logs
             if ((today - data.GetDate()).TotalDays > LOG_LIFE_TIME) continue;
 
-            _symptomJsonObjectList.Add(jsonObj);
+            _symptomJsonObjectList.Add(data);
 
             // check if this date already exists
             if (_trackerDictionary.ContainsKey(data.GetDate()))
@@ -88,7 +88,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             // don't manage outdated logs
             if ((today - data.GetDate()).TotalDays > LOG_LIFE_TIME) continue;
 
-            _asthmaJsonObjectList.Add(jsonObj);
+            _asthmaJsonObjectList.Add(data);
 
             // check if this date already exists
             if (_trackerDictionary.ContainsKey(data.GetDate()))
@@ -115,7 +115,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             // don't manage outdated logs
             if ((today - data.GetDate()).TotalDays > LOG_LIFE_TIME) continue;
 
-            _csuJsonObjectList.Add(jsonObj);
+            _csuJsonObjectList.Add(data);
 
             // check if this date already exists
             if (_trackerDictionary.ContainsKey(data.GetDate()))
@@ -142,7 +142,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             // don't manage outdated logs
             if ((today - data.GetDate()).TotalDays > LOG_LIFE_TIME) continue;
 
-            _uasJsonObjectList.Add(jsonObj);
+            _uasJsonObjectList.Add(data);
 
             // check if this date already exists
             if (_trackerDictionary.ContainsKey(data.GetDate()))
@@ -237,6 +237,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             case TrackerType.UAS:
                 return new UASData(date);
         }
+
         return null;
     }
 
@@ -249,21 +250,33 @@ public class TrackerManager : MonoSingleton<TrackerManager>
     {
         if (_trackerDictionary.ContainsKey(date))
         {
-            if (type == TrackerType.Asthma)
+            LogData logData = _trackerDictionary[date];
+            switch (type)
             {
-                return _trackerDictionary[date].asthmaData.GetScore();
-            }
-            else if (type == TrackerType.Symptom)
-            {
-                return _trackerDictionary[date].symptomData.GetScore();
-            }
-            else if (type == TrackerType.CSU)
-            {
-                return _trackerDictionary[date].csuData.GetScore();
-            }
-            else if (type == TrackerType.UAS)
-            {
-                return _trackerDictionary[date].uasData.GetScore();
+                case TrackerType.Asthma:
+                    if (logData.asthmaData != null)
+                    {
+                        return logData.asthmaData.GetScore();
+                    }
+                    break;
+                case TrackerType.Symptom:
+                    if (logData.asthmaData != null)
+                    {
+                        return logData.symptomData.GetScore();
+                    }
+                    break;
+                case TrackerType.CSU:
+                    if (logData.csuData != null)
+                    {
+                        return logData.csuData.GetScore();
+                    }
+                    break;
+                case TrackerType.UAS:
+                    if (logData.uasData != null)
+                    {
+                        return logData.uasData.GetScore();
+                    }
+                    break;
             }
         }
 
@@ -286,7 +299,11 @@ public class TrackerManager : MonoSingleton<TrackerManager>
 
     public static void UpdateEntry(DateTime day, CSUData data)
     {
-        _csuJsonObjectList.Add(data.FormatToJson());
+        // if it's a new entry
+        if (!_csuJsonObjectList.Contains(data))
+        {
+            _csuJsonObjectList.Add(data);
+        }
 
         if (_trackerDictionary.ContainsKey(day))
         {
@@ -302,7 +319,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         JSONObject o = new JSONObject();
         for (int i = 0; i < _csuJsonObjectList.Count; i++)
         {
-            o.Add(_csuJsonObjectList[i]);
+            o.Add(_csuJsonObjectList[i].FormatToJson());
         }
 
         WriteToFile(GetPath(TrackerType.CSU), o.Print(true));
@@ -310,7 +327,11 @@ public class TrackerManager : MonoSingleton<TrackerManager>
 
     public static void UpdateEntry(DateTime day, UASData data)
     {
-        _uasJsonObjectList.Add(data.FormatToJson());
+        // if it's a new entry
+        if (!_uasJsonObjectList.Contains(data))
+        {
+            _uasJsonObjectList.Add(data);
+        }
 
         if (_trackerDictionary.ContainsKey(day))
         {
@@ -326,7 +347,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         JSONObject o = new JSONObject();
         for (int i = 0; i < _uasJsonObjectList.Count; i++)
         {
-            o.Add(_uasJsonObjectList[i]);
+            o.Add(_uasJsonObjectList[i].FormatToJson());
         }
 
         WriteToFile(GetPath(TrackerType.UAS), o.Print(true));
@@ -334,7 +355,11 @@ public class TrackerManager : MonoSingleton<TrackerManager>
 
     public static void UpdateEntry(DateTime day, AsthmaData data)
     {
-        _asthmaJsonObjectList.Add(data.FormatToJson());
+        // if it's a new entry
+        if (!_asthmaJsonObjectList.Contains(data))
+        {
+            _asthmaJsonObjectList.Add(data);
+        }
 
         if (_trackerDictionary.ContainsKey(day))
         {
@@ -350,7 +375,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         JSONObject o = new JSONObject();
         for (int i = 0; i < _asthmaJsonObjectList.Count; i++)
         {
-            o.Add(_asthmaJsonObjectList[i]);
+            o.Add(_asthmaJsonObjectList[i].FormatToJson());
         }
 
         WriteToFile(GetPath(TrackerType.Asthma), o.Print(true));
@@ -358,7 +383,11 @@ public class TrackerManager : MonoSingleton<TrackerManager>
 
     public static void UpdateEntry(DateTime day, SymptomData data)
     {
-        _symptomJsonObjectList.Add(data.FormatToJson());
+        // if it's a new entry
+        if (!_symptomJsonObjectList.Contains(data))
+        {
+            _symptomJsonObjectList.Add(data);
+        }
 
         if (_trackerDictionary.ContainsKey(day))
         {
@@ -374,7 +403,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         JSONObject o = new JSONObject();
         for (int i = 0; i < _symptomJsonObjectList.Count; i++)
         {
-            o.Add(_symptomJsonObjectList[i]);
+            o.Add(_symptomJsonObjectList[i].FormatToJson());
         }
 
         WriteToFile(GetPath(TrackerType.Symptom), o.Print(true));
@@ -389,7 +418,10 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         if (File.Exists(path))
         {
             string jsonString = File.ReadAllText(path);
-            return new JSONObject(jsonString).list;
+            jsonString = jsonString.Replace("\n", "");
+            jsonString = jsonString.Replace("\t", "");
+            JSONObject obj = new JSONObject(jsonString);
+            return obj.list;
         }
         else
         {
@@ -405,6 +437,56 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         File.WriteAllText(path, content);
     }
 
+    public static List<DateTime> GetMaxDateRange()
+    {
+        List<DateTime> dates = new List<DateTime>();
+        DateTime date = DateTime.Today.AddDays(-LOG_LIFE_TIME + 1);
+        for (int i = 0; i < LOG_LIFE_TIME; i++)
+        {
+            dates.Add(date.Date);
+            date = date.AddDays(1);
+        }
+
+        return dates;
+    }
+
+    public static int GetMaxScore(TrackerType type)
+    {
+        switch (type)
+        {
+            case TrackerType.Asthma:
+                if (_asthmaJsonObjectList.Count > 0)
+                {
+                    return _asthmaJsonObjectList[0].GetMaxScore();
+                }
+
+                break;
+            case TrackerType.Symptom:
+                if (_symptomJsonObjectList.Count > 0)
+                {
+                    return _symptomJsonObjectList[0].GetMaxScore();
+                }
+
+                break;
+            case TrackerType.CSU:
+                if (_csuJsonObjectList.Count > 0)
+                {
+                    return _csuJsonObjectList[0].GetMaxScore();
+                }
+
+                break;
+            case TrackerType.UAS:
+                if (_uasJsonObjectList.Count > 0)
+                {
+                    return _uasJsonObjectList[0].GetMaxScore();
+                }
+
+                break;
+        }
+
+        return 0;
+    }
+
     #endregion
 
 #if UNITY_EDITOR
@@ -418,6 +500,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         Texture2D[] textures = Resources.LoadAll<Texture2D>("RandomTextures");
 
         int days = Random.Range(15, 30);
+        // stay today date empty to use
         DateTime date = DateTime.Now.AddDays(-days).Date;
         Debug.Log("Fixed start date: " + date.ToString("dd/MM/yyyy"));
 
