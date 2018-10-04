@@ -12,14 +12,17 @@ namespace App.Data.CSU
         /// <param name="json"></param>
         public UASData(string json) : base(json)
         {
-            questionDataList = questions;
         }
         
         public UASData(DateTime date) : base (date)
         {
-            questionDataList = questions;
         }
 
+        public override List<QuestionData> questionDataList
+        {
+            get { return questions; }
+        }
+        
         public static List<QuestionData> questions = new List<QuestionData>()
         {
             new QuestionData

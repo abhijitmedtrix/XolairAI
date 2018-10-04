@@ -27,6 +27,11 @@ namespace App.Data.CSU
 
     public class CSUData : QuestionBasedTrackerData
     {
+        public override List<QuestionData> questionDataList
+        {
+            get { return questions; }
+        }
+        
         public enum BodyPart
         {
             Head,
@@ -50,8 +55,6 @@ namespace App.Data.CSU
                 {BodyPart.Chest, new Answer[] {new Answer {option = 0}, new Answer {option = 0}}},
                 {BodyPart.Legs, new Answer[] {new Answer {option = 0}, new Answer {option = 0}}}
             };
-            
-            questionDataList = questions;
             
             // clear incorrectly filled array from base QuestionBaseTrackerData constructor
             _answers.Clear();
@@ -87,8 +90,6 @@ namespace App.Data.CSU
 
         public CSUData(DateTime date) : base(date)
         {
-            questionDataList = questions;
-
             // set default data values
             _answersDict = new Dictionary<BodyPart, Answer[]>
             {

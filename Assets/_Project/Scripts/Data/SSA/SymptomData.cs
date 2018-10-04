@@ -11,12 +11,15 @@ namespace App.Data.SSA
         /// <param name="json"></param>
         public SymptomData(string json) : base(json)
         {
-            questionDataList = questions;
         }
         
         public SymptomData(DateTime date) : base (date)
         {
-            questionDataList = questions;
+        }
+        
+        public override List<QuestionData> questionDataList
+        {
+            get { return questions; }
         }
 
         public static List<QuestionData> questions = new List<QuestionData>

@@ -425,8 +425,8 @@ public class TrackerManager : MonoSingleton<TrackerManager>
         }
         else
         {
-            Debug.LogWarning("No log file found by path: " + path);
-            return null;
+            Debug.LogWarning($"No log file found by path: {path}. Returning empty list.");
+            return new List<JSONObject>();
         }
     }
 
@@ -459,6 +459,11 @@ public class TrackerManager : MonoSingleton<TrackerManager>
                 {
                     return _asthmaJsonObjectList[0].GetMaxScore();
                 }
+                else
+                {
+                    // just create a dummy instance to calculate max score
+                    return new AsthmaData(DateTime.Today).GetMaxScore();
+                }
 
                 break;
             case TrackerType.Symptom:
@@ -466,21 +471,33 @@ public class TrackerManager : MonoSingleton<TrackerManager>
                 {
                     return _symptomJsonObjectList[0].GetMaxScore();
                 }
-
+                else
+                {
+                    // just create a dummy instance to calculate max score
+                    return new SymptomData(DateTime.Today).GetMaxScore();
+                }
                 break;
             case TrackerType.CSU:
                 if (_csuJsonObjectList.Count > 0)
                 {
                     return _csuJsonObjectList[0].GetMaxScore();
                 }
-
+                else
+                {
+                    // just create a dummy instance to calculate max score
+                    return new CSUData(DateTime.Today).GetMaxScore();
+                }
                 break;
             case TrackerType.UAS:
                 if (_uasJsonObjectList.Count > 0)
                 {
                     return _uasJsonObjectList[0].GetMaxScore();
                 }
-
+                else
+                {
+                    // just create a dummy instance to calculate max score
+                    return new UASData(DateTime.Today).GetMaxScore();
+                }
                 break;
         }
 
@@ -516,7 +533,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             for (int j = 0; j < symptomData.questionDataList.Count; j++)
             {
                 QuestionBasedTrackerData.QuestionData qData = symptomData.GetQuestion();
-                symptomData.SetAnswer(qData, UnityEngine.Random.Range(1, qData.answersOption.Length));
+                symptomData.SetAnswer(qData, Random.Range(1, qData.answersOption.Length));
             }
 
             symptomJsonObject.Add(symptomData.FormatToJson());
@@ -526,7 +543,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             for (int j = 0; j < asthmaData.questionDataList.Count; j++)
             {
                 QuestionBasedTrackerData.QuestionData qData = asthmaData.GetQuestion();
-                asthmaData.SetAnswer(qData, UnityEngine.Random.Range(1, qData.answersOption.Length));
+                asthmaData.SetAnswer(qData, Random.Range(1, qData.answersOption.Length));
             }
 
             asthmaJsonObject.Add(asthmaData.FormatToJson());
@@ -549,7 +566,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
                 }
 
                 QuestionBasedTrackerData.QuestionData qData = csuData.GetQuestion();
-                csuData.SetAnswer(qData, UnityEngine.Random.Range(1, qData.answersOption.Length));
+                csuData.SetAnswer(qData, Random.Range(1, qData.answersOption.Length));
 
                 if (Random.value > 0.5f)
                 {
@@ -574,7 +591,7 @@ public class TrackerManager : MonoSingleton<TrackerManager>
             for (int j = 0; j < uasData.questionDataList.Count; j++)
             {
                 QuestionBasedTrackerData.QuestionData qData = uasData.GetQuestion();
-                uasData.SetAnswer(qData, UnityEngine.Random.Range(1, qData.answersOption.Length));
+                uasData.SetAnswer(qData, Random.Range(1, qData.answersOption.Length));
             }
 
             uasJsonObject.Add(uasData.FormatToJson());

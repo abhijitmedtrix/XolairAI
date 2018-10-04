@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace App.Data
 {
-    public class QuestionBasedTrackerData : BaseTrackerData
+    public abstract class QuestionBasedTrackerData : BaseTrackerData
     {
         protected List<Answer> _answers = new List<Answer>();
         protected int _currentQuestionIndex = 0;
@@ -164,7 +164,7 @@ namespace App.Data
             return max;
         }
         
-        public List<QuestionData> questionDataList;
+        public abstract List<QuestionData> questionDataList { get; }
 
         public class QuestionData
         {

@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using DG.Tweening;
-using DG.Tweening.Plugins.Core.PathCore;
 using Draw2DShapesLite;
 using UnityEngine;
 
