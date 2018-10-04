@@ -1,22 +1,48 @@
 ﻿using System;
 using System.Globalization;
+using UnityEngine;
 
 namespace App.Data
 {
     public class BaseTrackerData
     {
-        public string date;
+        protected DateTime _dateTime = DateTime.MinValue;
+        protected string _initialJson;
+        protected JSONObject _jsonObject;
+        protected int _totalScore;
 
-        private DateTime _fixedDate = DateTime.MinValue;
-
+        public Action<int> OnComplete;
+        
+        /// <summary>
+        /// Creating new data instance (adding new entry) we must add date.
+        /// </summary>
+        /// <param name="date"></param>
+        public BaseTrackerData(DateTime date)
+        {
+            _dateTime = date.Date;
+        }
+        
+        protected BaseTrackerData(string json)
+        {
+            _initialJson = json;
+            _jsonObject = new JSONObject(_initialJson);
+            _dateTime = DateTime.ParseExact(_jsonObject.GetField("date").str, "dd/MM/yyyy", CultureInfo.InvariantCulture).Date;
+        }
+        
+        /// <summary>
+        /// Returns fixed date (Only Date without time stamp)
+        /// </summary>
+        /// <returns></returns>
         public DateTime GetDate()
         {
-            // if hadn't been parsed yet
-            if (_fixedDate == DateTime.MinValue)
-            {
-                _fixedDate = DateTime.Parse(date, null, DateTimeStyles.AssumeLocal);
-            }
-            return _fixedDate;
+            return _dateTime;
+        }
+        
+        public virtual JSONObject FormatToJson()
+        {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.AddField("date", _dateTime.ToString("dd/MM/yyyy"));
+            return jsonObject;
         }
     }
 }
